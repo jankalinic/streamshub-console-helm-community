@@ -1,0 +1,26 @@
+apiVersion: v2
+name: console-operator
+description: Community Helm chart for the StreamsHub Console operator
+type: application
+version: 0.14.2
+appVersion: "0.14.2"
+kubeVersion: ">=1.25.0-0"
+home: https://github.com/streamshub/console
+icon: https://raw.githubusercontent.com/streamshub/console/main/api/src/main/webui/public/full_logo_hori_default.svg
+sources:
+  - https://github.com/streamshub/console
+  - https://github.com/jankalinic/streamshub-console-helm-community
+keywords:
+  - kafka
+  - strimzi
+  - streamshub
+  - console
+  - operator
+maintainers:
+  - name: jankalinic
+    url: https://github.com/jankalinic
+annotations:
+  artifacthub.io/links: |
+    - name: Upstream project
+      url: https://github.com/streamshub/console
+  artifacthub.io/license: Apache-2.0

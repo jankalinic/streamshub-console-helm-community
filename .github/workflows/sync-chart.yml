@@ -1,0 +1,65 @@
+name: Sync chart from upstream release
+
+on:
+  schedule:
+    # Every 6 hours. Also runs on-demand via workflow_dispatch right after
+    # you cut a release upstream, instead of waiting for the next tick.
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "streamshub/console release tag to sync to (defaults to latest)"
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-helm@v4
+
+      - uses: mikefarah/yq@v4
+
+      - name: Determine target version
+        id: target
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if [ -z "$VERSION" ]; then
+            VERSION="$(gh api repos/streamshub/console/releases/latest --jq .tag_name)"
+          fi
+          CURRENT="$(yq -r '.appVersion' charts/console-operator/Chart.yaml)"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          if [ "$VERSION" = "$CURRENT" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Chart already synced to ${CURRENT}; nothing to do."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Chart is at ${CURRENT}; syncing to ${VERSION}."
+          fi
+
+      - name: Sync chart
+        if: steps.target.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./hack/sync-from-release.sh "${{ steps.target.outputs.version }}"
+
+      - name: helm lint
+        if: steps.target.outputs.changed == 'true'
+        run: |
+          helm lint charts/console-operator
+          helm template charts/console-operator --include-crds >/dev/null
+
+      - name: Commit and push
+        if: steps.target.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add charts/console-operator
+          git commit -m "chore: sync console-operator chart to ${{ steps.target.outputs.version }}"
+          git push

@@ -1,0 +1,10 @@
+The console-operator ({{ .Chart.AppVersion }}) has been installed into namespace "{{ .Release.Namespace }}".
+
+It watches: {{ .Values.watchNamespaces }}
+
+Next step: create a Console custom resource for it to reconcile. See:
+  https://github.com/streamshub/console/blob/main/README.md
+
+Check operator status with:
+  kubectl -n {{ .Release.Namespace }} get pods -l app.kubernetes.io/name=streamshub-console-operator
+  kubectl -n {{ .Release.Namespace }} logs -l app.kubernetes.io/name=streamshub-console-operator -f

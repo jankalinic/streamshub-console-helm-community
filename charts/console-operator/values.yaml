@@ -1,0 +1,39 @@
+# Default values for the console-operator chart.
+#
+# This chart is mechanically synced from the "non-OLM install" manifest that
+# streamshub/console itself generates and attaches to every GitHub release
+# (operator/controller/bin/generate-non-olm-install.sh). To keep that sync
+# low-maintenance and low-drift, only a handful of values are templated —
+# everything else (RBAC rules, probes, resource shape) is left exactly as
+# upstream ships it. See hack/sync-from-release.sh in this repo's root.
+
+image:
+  registry: quay.io
+  repository: streamshub/console-operator
+  # -- Overrides the image tag; defaults to the chart's appVersion (the
+  # streamshub/console release this chart was synced from).
+  tag: ""
+  pullPolicy: Always
+
+# -- Number of operator replicas. The reconciler does not support leader
+# election across more than one active replica in the way most operators do
+# upstream's own install manifest always ships this as 1.
+replicaCount: 1
+
+# -- Namespaces the operator watches for Console custom resources, as a
+# comma-separated list (e.g. "team-a,team-b"). Defaults to watching all
+# namespaces cluster-wide, matching upstream's own install manifest.
+watchNamespaces: "JOSDK_ALL_NAMESPACES"
+
+# -- Installs a Prometheus Operator ServiceMonitor for the operator's own
+# /q/metrics endpoint. Requires the Prometheus Operator CRDs
+# (monitoring.coreos.com) to already exist on the cluster.
+serviceMonitor:
+  enabled: false
+
+openshift:
+  # -- Binds the operator's ServiceAccount to the built-in
+  # `cluster-monitoring-view` ClusterRole, used for reading OpenShift's
+  # in-cluster monitoring stack. Only meaningful (and only exists) on
+  # OpenShift; leave disabled on vanilla Kubernetes.
+  clusterMonitoringView: false

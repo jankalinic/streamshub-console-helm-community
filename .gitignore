@@ -1,0 +1,5 @@
+.idea/
+*.iml
+*.tgz
+/.cr-release-packages/
+/.cr-index/
