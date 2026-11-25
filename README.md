@@ -1,31 +1,15 @@
-# streamshub-console-helm-community
+# StreamsHub Console Helm Charts (Community)
 
-Community Helm charts for [StreamsHub Console](https://github.com/streamshub/console).
+Community-maintained Helm charts for [StreamsHub Console](https://github.com/streamshub/console).
 Not an official StreamsHub project.
 
 ## Charts
 
-- [`console-operator`](charts/console-operator/README.md) — installs the
-  Console operator (CRDs, RBAC, Deployment).
+| Chart | Description |
+|---|---|
+| [`console-operator`](charts/console-operator) | Installs the Console operator: CRDs, RBAC, and Deployment |
 
-## How it works
-
-[`hack/sync-from-release.sh`](hack/sync-from-release.sh) mechanically
-regenerates each chart's `crds/` and `templates/` from the "non-OLM install"
-manifest that `streamshub/console` attaches to every GitHub release. A
-scheduled workflow ([`sync-chart.yml`](.github/workflows/sync-chart.yml))
-runs it automatically (every 6 hours, or on-demand via `workflow_dispatch`)
-and commits any update to `main`. A second workflow
-([`release-chart.yml`](.github/workflows/release-chart.yml)) then packages
-and publishes the chart via [chart-releaser](https://github.com/helm/chart-releaser-action)
-to this repo's `gh-pages` branch, served as a classic Helm repository.
-
-This keeps the chart a low-drift mirror of what upstream itself ships for a
-given release, rather than a hand-maintained copy that silently falls out of
-sync. See each chart's README for exactly which values are templated (image,
-namespace, watched namespaces, etc.) versus left untouched.
-
-## Installing
+## Usage
 
 ```console
 helm repo add streamshub-console-community https://jankalinic.github.io/streamshub-console-helm-community/
@@ -34,12 +18,13 @@ helm install console-operator streamshub-console-community/console-operator \
   --namespace console-operator --create-namespace
 ```
 
-## Repo setup (one-time)
+See the [`console-operator` chart's README](charts/console-operator/README.md)
+for available values and what is (and isn't) configurable.
 
-1. Settings → Actions → General → Workflow permissions → "Read and write
-   permissions" (required for both workflows to push commits/releases).
-2. After the first successful run of `release-chart.yml`, Settings → Pages →
-   Source → Deploy from branch → `gh-pages` / `/ (root)`.
-3. Optional: register this repo on [Artifact Hub](https://artifacthub.io) for
-   discoverability (needs `artifacthub-repo.yml`'s `repositoryID`, issued by
-   Artifact Hub when you add the repo there).
+## How charts stay up to date
+
+Charts here are regenerated automatically from each upstream
+`streamshub/console` release, not hand-maintained — see
+[`hack/sync-from-release.sh`](hack/sync-from-release.sh) and the
+[`sync-chart`](.github/workflows/sync-chart.yml) /
+[`release-chart`](.github/workflows/release-chart.yml) workflows for how.
